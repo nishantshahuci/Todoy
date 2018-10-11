@@ -11,9 +11,15 @@ import UIKit
 class TodoListViewController: UITableViewController {
     
     var listArray = ["go home", "do work", "plan vacation"];
+    
+    let defaults = UserDefaults.standard
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
+            listArray = items
+        }
     }
     
     //MARK: - TableView data source methods
@@ -70,6 +76,8 @@ class TodoListViewController: UITableViewController {
             if !text.isEmpty {
                 self.listArray.append(text)
             }
+            
+            self.defaults.set(self.listArray, forKey: "TodoListArray")
             
             self.tableView.reloadData()
         }
