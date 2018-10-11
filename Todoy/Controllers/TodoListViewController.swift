@@ -7,20 +7,25 @@
 //
 
 import UIKit
+import CoreData
 
 class TodoListViewController: UITableViewController {
     
+    @IBOutlet weak var searchBar: UISearchBar!
+    
     private var listArray: [Item] = [Item]();
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        searchBar.backgroundImage = UIImage()
         
         loadItems()
         
     }
     
-    //MARK: - TableView data source methods
+    // MARK: - TableView data source methods
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // return the number of rows in the section
@@ -39,7 +44,7 @@ class TodoListViewController: UITableViewController {
         return cell
     }
     
-    //MARK: - TableView delegate methods
+    // MARK: - TableView delegate methods
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // handle user selecting an item in the list
@@ -49,7 +54,7 @@ class TodoListViewController: UITableViewController {
         saveItems()
     }
     
-    //MARK: - Add new items
+    // MARK: - Add new items
     
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         // handle user pressing add button
@@ -67,12 +72,15 @@ class TodoListViewController: UITableViewController {
         let addAction = UIAlertAction(title: "Add", style: .default) { (action) in
             // handle user pressing "Add" button on alert
             
-            // handle case where the text is empty
+            // handle case where the text is null
             guard let text = textField.text else {
                 return
             }
+            
             if !text.isEmpty {
-                let newItem = Item(title: text)
+                let newItem = Item(context: self.context)
+                newItem.title = text
+                newItem.done = false
                 self.listArray.append(newItem)
             }
             
@@ -88,33 +96,55 @@ class TodoListViewController: UITableViewController {
         present(alert, animated: true, completion: nil)
     }
     
-    //MARK: - Helper functions
+    // MARK: - Helper functions
     
     func saveItems() {
-        // encode listArray and save to plist
+        // save listArray to CoreData
         
-        let encoder = PropertyListEncoder()
         do {
-            let data = try encoder.encode(listArray)
-            try data.write(to: dataFilePath!)
+            try context.save()
         } catch {
-            print("Error encoding array: \(error)")
+            print("Error saving context: \(error)")
         }
         
         self.tableView.reloadData()
     }
     
-    func loadItems() {
-        // retrieve listArray from plist
-        
-        if let data = try? Data(contentsOf: dataFilePath!) {
-            let decoder = PropertyListDecoder()
-            do {
-                listArray = try decoder.decode([Item].self, from: data)
-            } catch {
-                print("Error decoding array: \(error)")
-            }
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
+        // retrieve listArray from CoreData
+
+        do {
+            listArray = try context.fetch(request)
+        } catch {
+            print("Error fetching data from context: \(error)")
         }
+        
+        tableView.reloadData()
     }
+    
 }
 
+// MARK: - SearchBar methods
+
+extension TodoListViewController: UISearchBarDelegate {
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.count == 0 {
+            loadItems()
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+        } else {
+            guard let searchText = searchBar.text else {
+                return
+            }
+            
+            let request: NSFetchRequest<Item> = Item.fetchRequest()
+            request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchText)
+            request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+            
+            loadItems(with: request)
+        }
+    }
+    
+}
