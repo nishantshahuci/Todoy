@@ -11,7 +11,7 @@
         <!--Todoy-->
         <scene sceneID="wBf-vn-nxg">
             <objects>
-                <tableViewController id="85Z-SU-v1X" customClass="TodoListController" customModule="Todoy" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController id="85Z-SU-v1X" customClass="TodoListViewController" customModule="Todoy" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="Xy5-tu-dyW">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -31,7 +31,14 @@
                             <outlet property="delegate" destination="85Z-SU-v1X" id="CiB-NY-XGG"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Todoy" id="4dz-vc-QJx"/>
+                    <navigationItem key="navigationItem" title="Todoy" id="4dz-vc-QJx">
+                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="0vZ-hP-8zz">
+                            <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <connections>
+                                <action selector="addButtonPressed:" destination="85Z-SU-v1X" id="YcV-9T-sUN"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="s8D-tJ-cQo" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

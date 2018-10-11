@@ -8,9 +8,9 @@
 
 import UIKit
 
-class TodoListController: UITableViewController {
+class TodoListViewController: UITableViewController {
     
-    let listArray = ["go home", "do work", "plan vacation"];
+    var listArray = ["go home", "do work", "plan vacation"];
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -44,6 +44,43 @@ class TodoListController: UITableViewController {
         
         tableView.deselectRow(at: indexPath, animated: true);
     }
-
+    
+    //MARK: - Add new items
+    
+    @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
+        // handle user pressing add button
+        
+        let alert = UIAlertController(title: "Add new item", message: "", preferredStyle: .alert)
+        
+        // text field
+        var textField = UITextField();
+        alert.addTextField { (alertTextField) in
+            alertTextField.placeholder = "Create new item"
+            textField = alertTextField
+        }
+        
+        // action to add new item
+        let addAction = UIAlertAction(title: "Add", style: .default) { (action) in
+            // handle user pressing "Add" button on alert
+            
+            guard let text = textField.text else {
+                return
+            }
+            
+            if !text.isEmpty {
+                self.listArray.append(text)
+            }
+            
+            self.tableView.reloadData()
+        }
+        alert.addAction(addAction)
+        
+        // action to cancel
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true, completion: nil)
+    }
+    
 }
 
