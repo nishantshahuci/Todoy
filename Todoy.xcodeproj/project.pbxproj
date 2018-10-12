@@ -8,24 +8,24 @@
 
 /* Begin PBXBuildFile section */
 		19BF2F34216FA68700B3F78E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19BF2F33216FA68700B3F78E /* AppDelegate.swift */; };
-		19BF2F36216FA68700B3F78E /* TodoListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19BF2F35216FA68700B3F78E /* TodoListViewController.swift */; };
+		19BF2F36216FA68700B3F78E /* ItemViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19BF2F35216FA68700B3F78E /* ItemViewController.swift */; };
 		19BF2F39216FA68700B3F78E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 19BF2F37216FA68700B3F78E /* Main.storyboard */; };
 		19BF2F3B216FA68700B3F78E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 19BF2F3A216FA68700B3F78E /* Assets.xcassets */; };
 		19BF2F3E216FA68700B3F78E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 19BF2F3C216FA68700B3F78E /* LaunchScreen.storyboard */; };
 		19BF2F4E216FF2C000B3F78E /* DataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 19BF2F4C216FF2C000B3F78E /* DataModel.xcdatamodeld */; };
-		19BF2F712170103900B3F78E /* CategoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19BF2F702170103900B3F78E /* CategoryViewController.swift */; };
+		19BF2F712170103900B3F78E /* ListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19BF2F702170103900B3F78E /* ListViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		19BF2F30216FA68700B3F78E /* Todoy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Todoy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		19BF2F33216FA68700B3F78E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		19BF2F35216FA68700B3F78E /* TodoListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoListViewController.swift; sourceTree = "<group>"; };
+		19BF2F35216FA68700B3F78E /* ItemViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemViewController.swift; sourceTree = "<group>"; };
 		19BF2F38216FA68700B3F78E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		19BF2F3A216FA68700B3F78E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		19BF2F3D216FA68700B3F78E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		19BF2F3F216FA68700B3F78E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		19BF2F4D216FF2C000B3F78E /* DataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DataModel.xcdatamodel; sourceTree = "<group>"; };
-		19BF2F702170103900B3F78E /* CategoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryViewController.swift; sourceTree = "<group>"; };
+		19BF2F702170103900B3F78E /* ListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,8 +79,8 @@
 		19BF2F49216FD70C00B3F78E /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				19BF2F35216FA68700B3F78E /* TodoListViewController.swift */,
-				19BF2F702170103900B3F78E /* CategoryViewController.swift */,
+				19BF2F35216FA68700B3F78E /* ItemViewController.swift */,
+				19BF2F702170103900B3F78E /* ListViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -173,8 +173,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				19BF2F712170103900B3F78E /* CategoryViewController.swift in Sources */,
-				19BF2F36216FA68700B3F78E /* TodoListViewController.swift in Sources */,
+				19BF2F712170103900B3F78E /* ListViewController.swift in Sources */,
+				19BF2F36216FA68700B3F78E /* ItemViewController.swift in Sources */,
 				19BF2F4E216FF2C000B3F78E /* DataModel.xcdatamodeld in Sources */,
 				19BF2F34216FA68700B3F78E /* AppDelegate.swift in Sources */,
 			);
