@@ -7,12 +7,15 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 class ItemViewController: UITableViewController {
     
     // Search bar outlet
     @IBOutlet weak var searchBar: UISearchBar!
+    
+    // Initialize Realm
+    let realm = try! Realm()
     
     // Selected list
     var selectedList: List? {
@@ -22,15 +25,53 @@ class ItemViewController: UITableViewController {
     }
     
     // Array of items for a list
-    private var itemArray: [Item] = [Item]();
+    private var items: Results<Item>?;
     
-    // Core Data view context
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        searchBar.backgroundImage = UIImage()
+        customizeView()
+        
+    }
+    
+    // MARK: - Customize view function
+    
+    private func customizeView() {
+        // customize searchbar and navbar views
+        
+        // set constant colors
+        let navBarColor = self.navigationController?.navigationBar.barTintColor
+        let navBarCgColor = self.navigationController?.navigationBar.barTintColor?.cgColor
+        
+        // create background image for navbar
+        let rect = CGRect(origin: CGPoint(x: 0, y:0), size: CGSize(width: 1, height: 1))
+        UIGraphicsBeginImageContext(rect.size)
+        let context = UIGraphicsGetCurrentContext()!
+        if let color = navBarCgColor {
+            context.setFillColor(color)
+            context.fill(rect)
+        }
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        // change navigation background color
+        self.navigationController?.navigationBar.setBackgroundImage(image, for: UIBarPosition.any, barMetrics: UIBarMetrics.default)
+        self.navigationController?.navigationBar.shadowImage = UIImage()
+        self.navigationController?.navigationBar.isTranslucent = false
+        self.navigationController?.navigationBar.barTintColor = navBarColor
+        
+        // change search bar background color
+        self.searchBar.isTranslucent = false
+        self.searchBar.backgroundImage = image
+        self.searchBar.barTintColor = navBarColor
+        self.searchBar.layer.borderColor = navBarCgColor
+        
+        // add frame for tableview background
+        var frame = self.tableView.bounds
+        frame.origin.y = -frame.size.height
+        let bgView = UIView(frame: frame)
+        bgView.backgroundColor = navBarColor
+        self.tableView.insertSubview(bgView, at: 0)
         
     }
     
@@ -38,17 +79,18 @@ class ItemViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // return the number of rows in the section
-        return itemArray.count
+        return items?.count ?? 0
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         // return a new cell at the row
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "ItemCell", for: indexPath)
-        let item = itemArray[indexPath.row]
         
-        cell.textLabel?.text = item.title
-        cell.accessoryType = item.done ? .checkmark : .none
+        if let item = items?[indexPath.row] {
+            cell.textLabel?.text = item.title
+            cell.accessoryType = item.done ? .checkmark : .none
+        }
         
         return cell
     }
@@ -58,9 +100,19 @@ class ItemViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // handle user selecting an item in the list
         
+        if let item = items?[indexPath.row] {
+            do {
+                try realm.write {
+                    item.done = !item.done
+                }
+            } catch {
+                print("Error updating item: \(error)")
+            }
+        }
+        
         tableView.deselectRow(at: indexPath, animated: true);
-        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
-        saveItems()
+        
+        tableView.reloadData()
     }
     
     // MARK: - Add new items
@@ -81,22 +133,32 @@ class ItemViewController: UITableViewController {
         let addAction = UIAlertAction(title: "Add", style: .default) { (action) in
             // handle user pressing "Add" button on alert
             
-            // handle case where the text is null
+            // handle case where the text is nil
             guard let text = textField.text else {
                 return
             }
             
-            if !text.isEmpty {
-                let newItem = Item(context: self.context)
-                newItem.title = text
-                newItem.done = false
-                newItem.parentList = self.selectedList
-                self.itemArray.append(newItem)
+            // handle case where category is nil
+            guard let category = self.selectedList else {
+                return
             }
             
-            self.saveItems()
+            if !text.isEmpty {
+                do {
+                    try self.realm.write {
+                        let newItem = Item()
+                        newItem.title = text
+                        category.items.append(newItem)
+                    }
+                } catch {
+                    print("Error saving new items: \(error)")
+                }
+            }
+            
+            self.tableView.reloadData()
             
         }
+        
         alert.addAction(addAction)
         
         // action to cancel
@@ -108,47 +170,10 @@ class ItemViewController: UITableViewController {
     
     // MARK: - Helper functions
     
-    func saveItems() {
-        // save items to CoreData
+    func loadItems() {
+        // retrieve items from Realm
         
-        do {
-            try context.save()
-        } catch {
-            print("Error saving context: \(error)")
-        }
-        
-        self.tableView.reloadData()
-    }
-    
-    func loadItems(predicate: NSPredicate? = nil, sort: [NSSortDescriptor]? = nil) {
-        // retrieve items from CoreData
-        
-        guard let listName = selectedList?.name else {
-            fatalError("Failed to load list items")
-        }
-        
-        // create request
-        let request: NSFetchRequest<Item> = Item.fetchRequest()
-        
-        let listPredicate = NSPredicate(format: "parentList.name MATCHES %@", listName)
-        
-        // check for additional predicates
-        if let additionalPredicate = predicate {
-            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [additionalPredicate, listPredicate])
-        } else {
-            request.predicate = listPredicate
-        }
-        
-        // check for sort descriptors
-        if let sortDescriptors = sort {
-            request.sortDescriptors = sortDescriptors
-        }
-        
-        do {
-            itemArray = try context.fetch(request)
-        } catch {
-            print("Error fetching data from context: \(error)")
-        }
+        items = selectedList?.items.filter("TRUEPREDICATE")
         
         tableView.reloadData()
     }
@@ -161,24 +186,27 @@ extension ItemViewController: UISearchBarDelegate {
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         // handle user search
-        
+
         if searchBar.text?.count == 0 {
+            
             // reset view
             loadItems()
             DispatchQueue.main.async {
                 searchBar.resignFirstResponder()
             }
+            
         } else {
+            
             // filter lists
             guard let searchText = searchBar.text else {
                 return
             }
+
+            items = selectedList?.items.filter("title CONTAINS[cd] %@", searchText).sorted(byKeyPath: "title", ascending: true)
             
-            let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchText)
-            let sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+            tableView.reloadData()
             
-            loadItems(predicate: predicate, sort: sortDescriptors)
         }
     }
-    
+
 }
