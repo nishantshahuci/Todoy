@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class ListViewController: UITableViewController {
+class ListViewController: SwipeTableViewController {
     
     // Search bar outlet
     @IBOutlet weak var searchBar: UISearchBar!
@@ -24,50 +24,12 @@ class ListViewController: UITableViewController {
         
         super.viewDidLoad()
         
-        customizeView()
-        
         loadItems()
+        
     }
     
-    // MARK: - Customize view function
-    
-    private func customizeView() {
-        // customize searchbar and navbar views
-        
-        // set constant colors
-        let navBarColor = self.navigationController?.navigationBar.barTintColor
-        let navBarCgColor = self.navigationController?.navigationBar.barTintColor?.cgColor
-        
-        // create background image for navbar
-        let rect = CGRect(origin: CGPoint(x: 0, y:0), size: CGSize(width: 1, height: 1))
-        UIGraphicsBeginImageContext(rect.size)
-        let context = UIGraphicsGetCurrentContext()!
-        if let color = navBarCgColor {
-            context.setFillColor(color)
-            context.fill(rect)
-        }
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        
-        // change navigation background color
-        self.navigationController?.navigationBar.setBackgroundImage(image, for: UIBarPosition.any, barMetrics: UIBarMetrics.default)
-        self.navigationController?.navigationBar.shadowImage = UIImage()
-        self.navigationController?.navigationBar.isTranslucent = false
-        self.navigationController?.navigationBar.barTintColor = navBarColor
-        
-        // change search bar background color
-        self.searchBar.isTranslucent = false
-        self.searchBar.backgroundImage = image
-        self.searchBar.barTintColor = navBarColor
-        self.searchBar.layer.borderColor = navBarCgColor
-        
-        // add frame for tableview background
-        var frame = self.tableView.bounds
-        frame.origin.y = -frame.size.height
-        let bgView = UIView(frame: frame)
-        bgView.backgroundColor = navBarColor
-        self.tableView.insertSubview(bgView, at: 0)
-        
+    override func viewWillAppear(_ animated: Bool) {
+        super.customizeView(withSearchBar: searchBar)
     }
 
     // MARK: - TableView data source
@@ -81,7 +43,7 @@ class ListViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         // return new cell
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ListCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         if let listName = lists?[indexPath.row].name {
             cell.textLabel?.text = listName
@@ -97,6 +59,7 @@ class ListViewController: UITableViewController {
         // handle user selecting an item in the list
         
         performSegue(withIdentifier: "goToItems", sender: self)
+        tableView.deselectRow(at: indexPath, animated: true);
         
     }
     
@@ -159,7 +122,7 @@ class ListViewController: UITableViewController {
         present(alert, animated: true, completion: nil)
     }
     
-    // MARK: - Helper functions
+    // MARK: - Read items
     
     func loadItems() {
         // retrieve lists from Realm
@@ -167,6 +130,23 @@ class ListViewController: UITableViewController {
         lists = realm.objects(List.self)
 
         tableView.reloadData()
+    }
+    
+    // MARK: - Delete item
+    
+    override func updateModel(at indexPath: IndexPath) {
+        // delete item when swiped
+        
+        if let list = self.lists?[indexPath.row] {
+            do {
+                try self.realm.write {
+                    self.realm.delete(list)
+                }
+            } catch {
+                print("Error deleting list: \(error)")
+            }
+        }
+
     }
     
 }

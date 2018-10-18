@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class ItemViewController: UITableViewController {
+class ItemViewController: SwipeTableViewController {
     
     // Search bar outlet
     @IBOutlet weak var searchBar: UISearchBar!
@@ -29,50 +29,14 @@ class ItemViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        customizeView()
-        
     }
     
-    // MARK: - Customize view function
-    
-    private func customizeView() {
-        // customize searchbar and navbar views
+    override func viewWillAppear(_ animated: Bool) {
+        super.customizeView(withSearchBar: searchBar)
         
-        // set constant colors
-        let navBarColor = self.navigationController?.navigationBar.barTintColor
-        let navBarCgColor = self.navigationController?.navigationBar.barTintColor?.cgColor
-        
-        // create background image for navbar
-        let rect = CGRect(origin: CGPoint(x: 0, y:0), size: CGSize(width: 1, height: 1))
-        UIGraphicsBeginImageContext(rect.size)
-        let context = UIGraphicsGetCurrentContext()!
-        if let color = navBarCgColor {
-            context.setFillColor(color)
-            context.fill(rect)
+        if let name = selectedList?.name {
+            title = name
         }
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        
-        // change navigation background color
-        self.navigationController?.navigationBar.setBackgroundImage(image, for: UIBarPosition.any, barMetrics: UIBarMetrics.default)
-        self.navigationController?.navigationBar.shadowImage = UIImage()
-        self.navigationController?.navigationBar.isTranslucent = false
-        self.navigationController?.navigationBar.barTintColor = navBarColor
-        
-        // change search bar background color
-        self.searchBar.isTranslucent = false
-        self.searchBar.backgroundImage = image
-        self.searchBar.barTintColor = navBarColor
-        self.searchBar.layer.borderColor = navBarCgColor
-        
-        // add frame for tableview background
-        var frame = self.tableView.bounds
-        frame.origin.y = -frame.size.height
-        let bgView = UIView(frame: frame)
-        bgView.backgroundColor = navBarColor
-        self.tableView.insertSubview(bgView, at: 0)
-        
     }
     
     // MARK: - TableView data source
@@ -85,7 +49,7 @@ class ItemViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         // return a new cell at the row
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ItemCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         if let item = items?[indexPath.row] {
             cell.textLabel?.text = item.title
@@ -115,7 +79,7 @@ class ItemViewController: UITableViewController {
         tableView.reloadData()
     }
     
-    // MARK: - Add new items
+    // MARK: - CRUD operations
     
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         // handle user pressing add button
@@ -168,14 +132,27 @@ class ItemViewController: UITableViewController {
         present(alert, animated: true, completion: nil)
     }
     
-    // MARK: - Helper functions
-    
     func loadItems() {
         // retrieve items from Realm
         
         items = selectedList?.items.filter("TRUEPREDICATE")
         
         tableView.reloadData()
+    }
+    
+    override func updateModel(at indexPath: IndexPath) {
+        // delete item when swiped
+        
+        if let item = items?[indexPath.row] {
+            do {
+                try realm.write {
+                    realm.delete(item)
+                }
+            } catch {
+                print("Error deleting item: \(error)")
+            }
+        }
+        
     }
     
 }
